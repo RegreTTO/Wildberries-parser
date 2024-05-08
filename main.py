@@ -2,14 +2,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from bs4 import BeautifulSoup as bs
 from bs4.element import Tag
 from selenium import webdriver
-from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
 import argparse
 import time
-from selenium.webdriver.support import expected_conditions as EC
 from tqdm import tqdm
 import openpyxl
-import string
 
 options = Options()
 # options.add_argument("--headless")
@@ -66,7 +63,11 @@ def parse(page_count: int = 1):
         price_without_discount = (
             product.find("p", {"class": "product-card__price price"}).find("del").text
         )
-        price_with_discount = product.find("ins", {"class" : "price__lower-price wallet-price"}).text
+        price_with_discount = product.find("ins", {"class" : "price__lower-price wallet-price"})
+        if price_with_discount is None:
+            price_with_discount = price_without_discount
+        else:
+            price_with_discount = price_with_discount.text
         brand = product.find("span", {"class": "product-card__brand"}).text
         prod = [name, brand, price_with_discount, price_without_discount]
         for i in range(len(prod)):
